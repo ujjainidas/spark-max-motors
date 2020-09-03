@@ -8,8 +8,17 @@
 package frc.robot;
 
 import edu.wpi.first.wpilibj.TimedRobot;
+import edu.wpi.first.wpilibj.smartdashboard.SmartDashboard;
 import edu.wpi.first.wpilibj2.command.Command;
 import edu.wpi.first.wpilibj2.command.CommandScheduler;
+
+//rev robotics imports
+import com.revrobotics.CANEncoder;
+import com.revrobotics.CANPIDController;
+import com.revrobotics.CANSparkMax;
+import com.revrobotics.ControlType;
+import com.revrobotics.CANSparkMaxLowLevel.MotorType;
+
 
 /**
  * The VM is configured to automatically run this class, and to call the functions corresponding to
@@ -47,6 +56,52 @@ public class Robot extends TimedRobot {
     // and running subsystem periodic() methods.  This must be called from the robot's periodic
     // block in order for anything in the Command-based framework to work.
     CommandScheduler.getInstance().run();
+    double p = SmartDashboard.getNumber("P Gain", 0);
+    double i = SmartDashboard.getNumber("I Gain", 0);
+    double d = SmartDashboard.getNumber("D Gain", 0);
+    double iz = SmartDashboard.getNumber("I Zone", 0);
+    double ff = SmartDashboard.getNumber("Feed Forward", 0);
+    double max = SmartDashboard.getNumber("Max Output", 0);
+    double min = SmartDashboard.getNumber("Min Output", 0);
+
+    if(p != RobotContainer.kP)
+    {
+      m_robotContainer.getPIDController().setP(p);
+      RobotContainer.kP = p;
+    }
+    if(i != RobotContainer.kI)
+    {
+      m_robotContainer.getPIDController().setI(i);
+      RobotContainer.kI = i;
+    }
+    if(d != RobotContainer.kD)
+    {
+      m_robotContainer.getPIDController().setD(D);
+      RobotContainer.kD = d;
+    }
+    if(iz != RobotContainer.kIz)
+    {
+      m_robotContainer.getPIDController().setIZone(iz);
+      RobotContainer.kIz = iz;
+    }
+    if(ff != RobotContainer.kFF)
+    {
+      m_robotContainer.getPIDController().setFF(ff);
+      RobotContainer.kFF = ff;
+    }
+    if((max != RobotContainer.maxOutput) || (min != RobotContainer.minOutput)) 
+    { 
+      m_robotContainer.getPIDController().setOutputRange(min, max); 
+      RobotContainer.minOutput = min; 
+      RobotContainer.maxOutput = max; 
+    }
+
+
+    double setPoint = m_robotContainer.getJoy().getY()*RobotContainer.maxRPM;
+    m_robotContainer.getPIDController().setReference(setPoint, ControlType.kVelocity);
+    
+    SmartDashboard.putNumber("Set Point", setPoint);
+    SmartDashboard.putNumber("Velocity", m_robotContainer.getCANEncoder().getVelocity());
   }
 
   /**
